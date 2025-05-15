@@ -2,21 +2,23 @@ package com.example.equipmentManager.Controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.equipmentManager.DTO.ApiResponse;
+import com.example.equipmentManager.DTO.EquipmentDto;
+import com.example.equipmentManager.Enums.EquipmentStatus;
 import com.example.equipmentManager.Model.Equipment;
 import com.example.equipmentManager.Service.EquipmentService;
 
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-
-import com.example.equipmentManager.DTO.EquipmentDto;
-import com.example.equipmentManager.Enums.EquipmentStatus;
+import jakarta.validation.Valid;
 
 
 @RestController
@@ -27,37 +29,40 @@ public class EquipmentController {
     }
 
     @GetMapping("/equipment")
-    public List<Equipment> getEquipment() {
-        List<Equipment> equipmentList = equipmentService.getAllEquipment();
-        return equipmentList;
+    public ResponseEntity<ApiResponse> getEquipment() {
+        ApiResponse apiResponse = equipmentService.getAllEquipment();
+        return new ResponseEntity<>(apiResponse, HttpStatus.OK);
     }   
 
     @GetMapping("/equipment/{id}")
-    public Equipment getEquipmentById(@PathVariable long id) {
-        Equipment equipment = equipmentService.getEquipmentById(id);
-        return equipment;
+    public ResponseEntity<ApiResponse> getEquipmentById(@PathVariable long id) {
+        ApiResponse apiResponse = equipmentService.getEquipmentById(id);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     } 
+
     @DeleteMapping("/equipment/{id}") 
-    public void deleteEquipment(@PathVariable long id) {
+    public ResponseEntity<ApiResponse> deleteEquipment(@PathVariable long id) {
         equipmentService.deleteEquipment(id);
+        return ResponseEntity.status(HttpStatus.OK).body(new ApiResponse(true, "Equipment deleted successfully", null));
     }
+
+
     @PostMapping("/addEquipment")
-    public String addEquipment(@RequestBody EquipmentDto equipmentDto) {
-        equipmentService.addEquipment(equipmentDto);
-        return "Equipment added successfully";
+    public ResponseEntity<ApiResponse> addEquipment(@Valid @RequestBody EquipmentDto equipmentDto) {
+        ApiResponse apiResponse = equipmentService.addEquipment(equipmentDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
     }
+
     @PostMapping("/updateEquipment/{id}")
-    public String updateEquipment(@RequestBody EquipmentDto equipmentDto, @PathVariable long id) {
-        equipmentService.updateEquipment(equipmentDto, id);
-        return "Equipment updated successfully";
+    public ResponseEntity<ApiResponse> updateEquipment(@Valid @RequestBody EquipmentDto equipmentDto, @PathVariable long id) {
+        ApiResponse apiResponse = equipmentService.updateEquipment(equipmentDto, id);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
     @GetMapping("/search")
-    public List<Equipment> searchEquipment(@RequestParam("status") EquipmentStatus status, @RequestParam(value="site", required=false) String site){
-        System.out.println("Status: " + status);
-        System.out.println("Site: " + site);
-        List<Equipment> equipmentList = equipmentService.searchEquipment(status, site);
-        return equipmentList;
+    public ResponseEntity<ApiResponse> searchEquipment(@RequestParam("status") EquipmentStatus status, @RequestParam("site") String site){
+        ApiResponse apiResponse = equipmentService.searchEquipment(status, site);
+        return ResponseEntity.status(HttpStatus.OK).body(apiResponse);
     }
 
 }
